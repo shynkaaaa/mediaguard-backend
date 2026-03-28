@@ -1,6 +1,5 @@
 # Environment variables
 .env
-.env.*
 
 # Python cache and bytecode
 __pycache__/
@@ -32,7 +31,13 @@ htmlcov/
 db.sqlite3
 db.sqlite3-journal
 staticfiles/
-media/uploads/
+media/
+
+# ML model weights
+*.pth
+*.pt
+*.onnx
+ml_weights/
 
 # Logs
 *.log

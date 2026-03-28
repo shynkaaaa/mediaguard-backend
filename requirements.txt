@@ -11,3 +11,5 @@ gunicorn>=22.0
 whitenoise>=6.7
 torch>=2.0
 torchvision>=0.15
+celery>=5.3
+redis>=5.0

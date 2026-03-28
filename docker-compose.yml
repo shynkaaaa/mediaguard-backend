@@ -17,6 +17,51 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: deepfake-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: deepfake-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./media:/app/media
+      - ./ml_weights:/app/apps/detection/ml/checkpoints
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery:
+    build: .
+    container_name: deepfake-celery
+    restart: unless-stopped
+    command: celery -A deepfake_backend worker -l info
+    env_file:
+      - .env
+    volumes:
+      - ./media:/app/media
+      - ./ml_weights:/app/apps/detection/ml/checkpoints
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   pgadmin:
     image: dpage/pgadmin4:9
     container_name: deepfake-pgadmin
