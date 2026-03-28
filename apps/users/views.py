@@ -36,3 +36,17 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class HealthCheckView(APIView):
+    """Check if backend is alive and CORS is working."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return Response(
+            {
+                "status": "ok",
+                "message": "Backend is running and ready for connections!",
+            },
+            status=status.HTTP_200_OK,
+        )
