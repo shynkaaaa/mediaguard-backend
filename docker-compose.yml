@@ -4,15 +4,15 @@ services:
     container_name: deepfake-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: deepfake_db
-      POSTGRES_USER: deepfake_user
-      POSTGRES_PASSWORD: deepfake_password
+      POSTGRES_DB: ${DB_NAME:-deepfake_db}
+      POSTGRES_USER: ${DB_USER:-deepfake_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U deepfake_user -d deepfake_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-deepfake_user} -d ${DB_NAME:-deepfake_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -65,8 +65,8 @@ services:
     container_name: deepfake-pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@local.dev
-      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@local.dev}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
       - "5050:80"
     volumes:

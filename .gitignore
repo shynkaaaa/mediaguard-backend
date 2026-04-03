@@ -43,15 +43,6 @@ ml_weights/
 *.log
 logs/
 
-# IDE/editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Ignore .env files with sensitive information
-SECURITY.md
+# Tutorial/Private documentation (keep local only)
+PRODUCTION.md
+SECURITY_CHECKLIST.md
