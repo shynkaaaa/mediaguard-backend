@@ -41,6 +41,7 @@ ml_weights/
 
 # Logs
 *.log
+logs/
 
 # IDE/editor files
 .vscode/
@@ -51,3 +52,6 @@ ml_weights/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Ignore .env files with sensitive information
+SECURITY.md

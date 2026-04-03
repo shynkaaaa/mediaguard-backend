@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from drf_spectacular.utils import extend_schema
+from django_ratelimit.decorators import ratelimit
+from django.utils.decorators import method_decorator
 
 from .models import DetectionTask, DetectionResult
 from .serializers import DetectionTaskSerializer, AnalyzeSerializer
@@ -13,12 +15,14 @@ from .ml import get_detector
 logger = logging.getLogger(__name__)
 
 
+@method_decorator(ratelimit(key='user', rate='10/m', method='POST'), name='dispatch')
 class AnalyzeView(APIView):
     """
     POST /api/detection/analyze/
 
     Upload an image or video for deepfake analysis.
     Detection runs synchronously and the result is returned immediately.
+    Rate limited to 10 requests per minute per user.
     """
 
     parser_classes = [MultiPartParser, FormParser]

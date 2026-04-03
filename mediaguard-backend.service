@@ -1,0 +1,22 @@
+[Unit]
+Description=MediaGuard Backend Gunicorn Server
+After=network.target postgresql.service redis.service
+
+[Service]
+Type=notify
+User=shynka
+Group=shynka
+WorkingDirectory=/home/shynka/Projects/mediaguard-backend
+Environment="PATH=/home/shynka/Projects/mediaguard-backend/.venv/bin"
+ExecStart=/home/shynka/Projects/mediaguard-backend/.venv/bin/gunicorn \
+    -c /home/shynka/Projects/mediaguard-backend/gunicorn.conf.py \
+    deepfake_backend.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

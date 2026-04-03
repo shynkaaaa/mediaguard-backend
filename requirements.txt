@@ -13,3 +13,8 @@ torch>=2.0
 torchvision>=0.15
 celery>=5.3
 redis>=5.0
+django-ratelimit>=4.1
+torchaudio>=2.0
+transformers>=4.30
+librosa
+scipy
