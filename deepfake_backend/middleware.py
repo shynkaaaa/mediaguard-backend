@@ -94,10 +94,17 @@ class SecurityMiddleware:
     def ban_ip(self, ip, duration=3600):
         """Temporarily ban IP for duration seconds (default 1 hour)."""
         cache_key = f"banned_ip_{ip}"
-        cache.set(cache_key, True, duration)
-        logger.warning(f"IP {ip} has been temporarily banned for {duration} seconds")
+        try:
+            cache.set(cache_key, True, duration)
+            logger.warning(f"IP {ip} has been temporarily banned for {duration} seconds")
+        except Exception as e:
+            logger.error(f"Failed to ban IP {ip} - cache unavailable: {e}")
 
     def is_ip_banned(self, ip):
         """Check if IP is banned."""
         cache_key = f"banned_ip_{ip}"
-        return cache.get(cache_key, False)
+        try:
+            return cache.get(cache_key, False)
+        except Exception:
+            # If cache is unavailable, assume IP is not banned
+            return False
