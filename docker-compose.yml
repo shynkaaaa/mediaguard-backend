@@ -39,7 +39,6 @@ services:
       - "8000:8000"
     volumes:
       - ./media:/app/media
-      - ./ml_weights:/app/apps/detection/ml/checkpoints
     depends_on:
       postgres:
         condition: service_healthy
@@ -55,7 +54,6 @@ services:
       - .env
     volumes:
       - ./media:/app/media
-      - ./ml_weights:/app/apps/detection/ml/checkpoints
     depends_on:
       postgres:
         condition: service_healthy

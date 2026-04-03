@@ -1,7 +1,15 @@
+"""
+DeepfakeDetector model for deepfake image detection.
+
+Architecture: EfficientNet-B4 + custom classifier head
+Source: https://github.com/firdavsm19/deepfake-detector
+"""
+
 import torch
 import torch.nn as nn
 from torchvision import models
-from .config import Config
+
+from ..config import Config
 
 
 class Swish(nn.Module):
@@ -64,7 +72,11 @@ class MBConvBlock(nn.Module):
         return out
 
 
-class DeepfakeDetectorModel(nn.Module):
+class DeepfakeDetector(nn.Module):
+    """
+    EfficientNet-B4 with custom classifier for 2 classes (REAL/FAKE).
+    """
+
     def __init__(self):
         super().__init__()
         self.backbone = models.efficientnet_b4(

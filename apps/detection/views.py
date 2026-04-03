@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -6,9 +8,9 @@ from drf_spectacular.utils import extend_schema
 
 from .models import DetectionTask, DetectionResult
 from .serializers import DetectionTaskSerializer, AnalyzeSerializer
-from .ml.detector import DeepfakeDetector
+from .ml import get_detector
 
-detector = DeepfakeDetector()
+logger = logging.getLogger(__name__)
 
 
 class AnalyzeView(APIView):
@@ -38,16 +40,18 @@ class AnalyzeView(APIView):
         )
 
         try:
+            detector = get_detector(media_type)
             result = detector.predict(task.file.path)
             DetectionResult.objects.create(
                 task=task,
-                fake_probability=result["fake_probability"],
-                is_fake=result["is_fake"],
-                details=result.get("details"),
-                model_version=result.get("model_version", "v1"),
+                fake_probability=result.fake_probability,
+                is_fake=result.is_fake,
+                details=result.details,
+                model_version=result.model_version,
             )
             task.status = DetectionTask.Status.DONE
-        except Exception:
+        except Exception as e:
+            logger.exception("Detection failed for task %s: %s", task.id, e)
             task.status = DetectionTask.Status.FAILED
 
         task.save(update_fields=["status"])
