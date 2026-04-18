@@ -36,5 +36,7 @@ urlpatterns = [
     path("api/detection/", include("apps.detection.urls")),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# This deployment runs Django behind Gunicorn directly on :8080, so media
+# should be served by Django URL patterns. If Nginx is used later, it can
+# serve /media/ directly and this fallback can remain unused.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

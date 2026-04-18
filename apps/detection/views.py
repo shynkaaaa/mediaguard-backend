@@ -61,7 +61,7 @@ class AnalyzeView(APIView):
         task.save(update_fields=["status"])
 
         return Response(
-            DetectionTaskSerializer(task).data,
+            DetectionTaskSerializer(task, context={"request": request}).data,
             status=status.HTTP_200_OK,
         )
 
