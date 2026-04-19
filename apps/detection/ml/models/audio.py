@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 try:
-    from transformers import Wav2Vec2Model
+    from transformers import Wav2Vec2Model, Wav2Vec2Config
     HAS_TRANSFORMERS = True
 except ImportError:
     HAS_TRANSFORMERS = False
@@ -92,7 +92,11 @@ class VoiceDetector(nn.Module):
                 "Install with: pip install transformers"
             )
 
-        self.backbone = Wav2Vec2Model.from_pretrained(AudioConfig.BACKBONE)
+        try:
+            self.backbone = Wav2Vec2Model.from_pretrained(AudioConfig.BACKBONE)
+        except Exception:
+            # Fallback for offline environments; weights can still be restored from checkpoint.
+            self.backbone = Wav2Vec2Model(Wav2Vec2Config())
         self.proj = nn.Sequential(
             nn.Linear(AudioConfig.BACKBONE_DIM, AudioConfig.PROJ_DIM),
             nn.LayerNorm(AudioConfig.PROJ_DIM),

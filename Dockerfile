@@ -8,6 +8,10 @@ WORKDIR /app
 # System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
+    ffmpeg \
+    libsndfile1 \
+    libgl1 \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Python dependencies

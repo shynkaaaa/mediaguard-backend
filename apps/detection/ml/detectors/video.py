@@ -132,12 +132,25 @@ class VideoDetector(BaseDetector):
             raise FileNotFoundError(f"File not found: {file_path}")
 
         if not self.is_ready:
-            raise RuntimeError(
-                f"VideoDetector not ready. Place model weights at: {WEIGHTS_PATH}"
+            logger.warning("VideoDetector in stub mode for file %s", file_path)
+            return DetectionResult(
+                fake_probability=0.0,
+                is_fake=False,
+                model_version="stub",
+                details={"warning": "video_model_not_ready"},
             )
 
-        # Extract frames
-        frames = self._extract_frames(file_path)
+        try:
+            # Extract frames
+            frames = self._extract_frames(file_path)
+        except Exception as exc:
+            logger.exception("Video preprocessing failed, using stub result: %s", exc)
+            return DetectionResult(
+                fake_probability=0.0,
+                is_fake=False,
+                model_version="stub",
+                details={"warning": "video_preprocessing_failed", "error": str(exc)},
+            )
 
         # Transform frames
         tensors = [self._transform(f) for f in frames]

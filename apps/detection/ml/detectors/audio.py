@@ -99,11 +99,25 @@ class AudioDetector(BaseDetector):
             raise FileNotFoundError(f"File not found: {file_path}")
 
         if not self.is_ready:
-            raise RuntimeError(
-                f"AudioDetector not ready. Place model weights at: {WEIGHTS_PATH}"
+            logger.warning("AudioDetector in stub mode for file %s", file_path)
+            return DetectionResult(
+                fake_probability=0.0,
+                is_fake=False,
+                model_version="stub",
+                details={"warning": "audio_model_not_ready"},
             )
 
-        waveform = self._load_audio(file_path)
+        try:
+            waveform = self._load_audio(file_path)
+        except Exception as exc:
+            logger.exception("Audio preprocessing failed, using stub result: %s", exc)
+            return DetectionResult(
+                fake_probability=0.0,
+                is_fake=False,
+                model_version="stub",
+                details={"warning": "audio_preprocessing_failed", "error": str(exc)},
+            )
+
         waveform = waveform.unsqueeze(0).to(self.device)  # (1, T)
 
         with torch.no_grad():
