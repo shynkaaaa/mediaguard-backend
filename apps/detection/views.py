@@ -8,9 +8,9 @@ from drf_spectacular.utils import extend_schema
 from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
 
-from .models import DetectionTask, DetectionResult
+from .models import DetectionTask
 from .serializers import DetectionTaskSerializer, AnalyzeSerializer
-from .ml import get_detector
+from .tasks import run_detection
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +20,8 @@ class AnalyzeView(APIView):
     """
     POST /api/detection/analyze/
 
-    Upload an image or video for deepfake analysis.
-    Detection runs synchronously and the result is returned immediately.
+    Upload a file for deepfake analysis.
+    Detection runs asynchronously in Celery.
     Rate limited to 10 requests per minute per user.
     """
 
@@ -40,25 +40,15 @@ class AnalyzeView(APIView):
             user=request.user,
             file=uploaded_file,
             media_type=media_type,
-            status=DetectionTask.Status.PROCESSING,
+            status=DetectionTask.Status.PENDING,
         )
 
         try:
-            detector = get_detector(media_type)
-            result = detector.predict(task.file.path)
-            DetectionResult.objects.create(
-                task=task,
-                fake_probability=result.fake_probability,
-                is_fake=result.is_fake,
-                details=result.details,
-                model_version=result.model_version,
-            )
-            task.status = DetectionTask.Status.DONE
+            run_detection.delay(str(task.id))
         except Exception as e:
-            logger.exception("Detection failed for task %s: %s", task.id, e)
+            logger.exception("Failed to enqueue detection task %s: %s", task.id, e)
             task.status = DetectionTask.Status.FAILED
-
-        task.save(update_fields=["status"])
+            task.save(update_fields=["status"])
 
         return Response(
             DetectionTaskSerializer(task, context={"request": request}).data,
