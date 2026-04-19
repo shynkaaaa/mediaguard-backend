@@ -1,7 +1,7 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
-from django.conf.urls.static import static
+from django.views.static import serve
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -34,9 +34,5 @@ urlpatterns = [
     path("api/redoc/", SpectacularRedocView.as_view(url_name="api-schema"), name="api-redoc"),
     path("api/auth/", include("apps.users.urls")),
     path("api/detection/", include("apps.detection.urls")),
+    re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
 ]
-
-# This deployment runs Django behind Gunicorn directly on :8080, so media
-# should be served by Django URL patterns. If Nginx is used later, it can
-# serve /media/ directly and this fallback can remain unused.
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
