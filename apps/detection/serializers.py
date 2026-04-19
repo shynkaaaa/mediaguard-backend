@@ -45,6 +45,30 @@ class AnalyzeSerializer(serializers.Serializer):
     """Input serializer for POST /analyze/"""
 
     file = serializers.FileField()
+    # Default upload limits by media type.
+    MAX_SIZE_BY_TYPE = {
+        "image": 10 * 1024 * 1024,   # 10 MB
+        "video": 200 * 1024 * 1024,  # 200 MB
+        "audio": 100 * 1024 * 1024,  # 100 MB
+    }
+
+    def _validate_size(self, file_obj):
+        media_type = getattr(self, "_media_type", None)
+        if not media_type:
+            return
+
+        max_size = self.MAX_SIZE_BY_TYPE.get(media_type)
+        if max_size is None:
+            return
+
+        file_size = getattr(file_obj, "size", 0) or 0
+        if file_size > max_size:
+            max_mb = max_size // (1024 * 1024)
+            current_mb = round(file_size / (1024 * 1024), 2)
+            raise serializers.ValidationError(
+                f"File is too large for {media_type}. "
+                f"Maximum allowed size is {max_mb} MB, got {current_mb} MB."
+            )
 
     def validate(self, data):
         file_obj = data.get("file")
@@ -82,5 +106,7 @@ class AnalyzeSerializer(serializers.Serializer):
                 raise serializers.ValidationError(
                     "Unsupported file type. Upload an image (jpg, png...), video (mp4, avi...), or audio (mp3, wav, flac...)."
                 )
+
+        self._validate_size(file_obj)
 
         return data

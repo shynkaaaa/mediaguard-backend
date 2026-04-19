@@ -138,6 +138,12 @@ Response `200 OK`:
 }
 ```
 
+#### Upload file size limits
+
+- image: up to 10 MB
+- audio: up to 100 MB
+- video: up to 200 MB
+
 ## Integrating Your ML Model
 
 Open `apps/detection/ml/detector.py` and replace `_run_model()` with your actual inference:
