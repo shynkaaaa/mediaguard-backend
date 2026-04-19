@@ -20,6 +20,27 @@ class DetectionTaskSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "status", "created_at", "updated_at", "result")
 
 
+class DetectionTaskStatusSerializer(serializers.ModelSerializer):
+    result = DetectionResultSerializer(read_only=True)
+    progress = serializers.SerializerMethodField()
+    is_finished = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DetectionTask
+        fields = ("id", "media_type", "status", "progress", "is_finished", "updated_at", "result")
+        read_only_fields = fields
+
+    def get_progress(self, obj):
+        if obj.status == DetectionTask.Status.PENDING:
+            return 5
+        if obj.status == DetectionTask.Status.PROCESSING:
+            return 60
+        return 100
+
+    def get_is_finished(self, obj):
+        return obj.status in (DetectionTask.Status.DONE, DetectionTask.Status.FAILED)
+
+
 class AnalyzeSerializer(serializers.Serializer):
     """Input serializer for POST /analyze/"""
 

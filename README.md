@@ -109,6 +109,7 @@ Step-by-step smoke tests (register/login/profile/detection) are documented in [L
 |---|---|---|
 | POST | `/api/detection/analyze/` | Upload file, start detection |
 | GET | `/api/detection/tasks/` | List my tasks |
+| GET | `/api/detection/tasks/{id}/status/` | Lightweight status for polling |
 | GET | `/api/detection/tasks/{id}/` | Task detail + result |
 | DELETE | `/api/detection/tasks/{id}/` | Delete task |
 

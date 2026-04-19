@@ -9,7 +9,7 @@ from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
 
 from .models import DetectionTask
-from .serializers import DetectionTaskSerializer, AnalyzeSerializer
+from .serializers import DetectionTaskSerializer, DetectionTaskStatusSerializer, AnalyzeSerializer
 from .tasks import run_detection
 
 logger = logging.getLogger(__name__)
@@ -74,6 +74,19 @@ class DetectionTaskDetailView(generics.RetrieveDestroyAPIView):
 
     queryset = DetectionTask.objects.none()
     serializer_class = DetectionTaskSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return DetectionTask.objects.none()
+        return DetectionTask.objects.filter(user=self.request.user).select_related("result")
+
+
+class DetectionTaskStatusView(generics.RetrieveAPIView):
+    """GET /api/detection/tasks/{id}/status/"""
+
+    queryset = DetectionTask.objects.none()
+    serializer_class = DetectionTaskStatusSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
