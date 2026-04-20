@@ -9,6 +9,7 @@ The task:
 
 import logging
 from celery import shared_task
+from celery.exceptions import MaxRetriesExceededError
 from django.db import transaction
 
 from .models import DetectionTask, DetectionResult
@@ -44,7 +45,15 @@ def run_detection(self, task_id: str):
             task.save(update_fields=["status"])
 
     except Exception as exc:
-        logger.exception("Detection failed for task %s", task_id)
-        task.status = DetectionTask.Status.FAILED
-        task.save(update_fields=["status"])
-        raise self.retry(exc=exc)
+        logger.exception(
+            "Detection failed for task %s on attempt %s/%s",
+            task_id,
+            self.request.retries + 1,
+            (self.max_retries or 0) + 1,
+        )
+        try:
+            raise self.retry(exc=exc)
+        except MaxRetriesExceededError:
+            task.status = DetectionTask.Status.FAILED
+            task.save(update_fields=["status"])
+            logger.error("Detection permanently failed for task %s", task_id)
